@@ -2,18 +2,24 @@
 
 echo "Starting container ..."
 
+RESTIC_CMD=restic
+
+if [ -n "${ROOT_CERT}" ]; then
+	RESTIC_CMD="${RESTIC_CMD} --cert ${ROOT_CERT}"
+fi
+
 if [ -n "${NFS_TARGET}" ]; then
     echo "Mounting NFS based on NFS_TARGET: ${NFS_TARGET}"
     mount -o nolock -v ${NFS_TARGET} /mnt/restic
 fi
 
-restic snapshots ${RESTIC_INIT_ARGS} &>/dev/null
+$RESTIC_CMD snapshots &>/dev/null
 status=$?
 echo "Check Repo status $status"
 
 if [ $status != 0 ]; then
     echo "Restic repository '${RESTIC_REPOSITORY}' does not exists. Running restic init."
-    restic init ${RESTIC_INIT_ARGS}
+    $RESTIC_CMD init
 
     init_status=$?
     echo "Repo init status $init_status"
